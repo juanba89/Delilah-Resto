@@ -1,0 +1,25 @@
+{
+  "name": "delilah-resto",
+  "version": "1.0.0",
+  "description": "Esta es una API para Delilah Resto",
+  "main": "./src/app.js",
+  "scripts": {
+    "start": "nodemon ./src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juanba89/Delilah-Resto.git"
+  },
+  "author": "Juan Baeza",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/juanba89/Delilah-Resto/issues"
+  },
+  "homepage": "https://github.com/juanba89/Delilah-Resto#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "js-yaml": "^4.1.0",
+    "nodemon": "^2.0.10",
+    "swagger-ui-express": "^4.1.6"
+  }
+}
