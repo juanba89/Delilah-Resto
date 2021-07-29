@@ -1,0 +1,551 @@
+openapi: 3.0.2
+info:
+  title: Dalilah Resto
+  version: 1.0
+license:
+  name: Apache 2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: http://localhost:3030/api/v1
+tags:
+  - name: Login
+    description: loggeo
+  - name: Users
+    description: operaciones de los usuarios
+  - name: Orders
+    description: operaciones de los pedidos
+  - name: Products
+    description: operaciones de los productos
+  - name: Payment Methods
+    description: operaciones de los metodos de pago
+paths:
+  /login:
+    post:
+      tags:
+        - Login
+      summary: Hacer login
+      description: Usuarios registrados se pueden loggear
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object 
+              properties:
+                userName:
+                  type: string
+                  example: Admin
+                password:
+                  type: password
+                  example: admin123
+      responses:
+        200:
+          description: loggeado exitosamente
+        400:
+          description: falta completar un campo
+        404:
+          description: Usuario o password incorrectos
+  /users:
+    post:
+      tags:
+      - Users
+      summary: crear un usuario nuevo
+      description: datos para crear un nuevo usuario
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userName:
+                    type: string
+                    example: juanba
+                  fullName:
+                    type: string
+                    example: Juan Baeza
+                  email:
+                    type: mail
+                    example: juan@gmail.com
+                  phone:
+                    type: integer
+                    example: 1167610023
+                  adress:
+                    type: string
+                    example: San Martin 25
+                  password:
+                    type: password
+                    example: juan123
+      responses:
+        200:
+          description: usuario cargado con exito
+        400:
+          description: falta completar un campo
+    get:
+      tags:
+        - Users
+      summary: Muestra la lista de usuarios regstrados
+      description: Solo el administrador puede verlo
+      parameters:
+        - name: userid
+          in: header
+          description: id del usuario loggeado, si no corresponde al id del admin no muestra la lista
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Acceso permitido
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El usuario no existe
+  /orders:
+    get:
+      tags:
+        - Orders
+      summary: mostrar lista de pedidos
+      description: muestra lista de pedidos si el userid es el del admin y si el mismo esta loggeado 
+      parameters:
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Acceso permitido
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El usuario no existe 
+    post:
+      tags:
+      - Orders
+      summary: crear una orden
+      description: datos para crear una nueva orden
+      parameters:
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  idPayMet: 
+                    type: number
+                    enum: [1,2,3,4,5]
+                    example: 1
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        idProd: 
+                          type: number
+                          example: 1
+                        name:
+                          type: string
+                          example: "Beagle de salmon"
+                        price:
+                          type: number
+                          example: 425
+                        amount:
+                          type: number
+                          example: 2
+      responses:
+        200:
+          description: orden creada exitosamente
+        400:
+          description: los datos ingresados son incorrectos
+        401:
+          description: No esta loggeado.
+        404:
+          description: El usuario no existe 
+  /orders/{orderId}:
+    put:
+      tags:
+        - Orders
+      summary: confirmar pedido
+      description: se cierra el pedido y pasa a estado confirmado 
+      parameters:
+        - name: orderId
+          in: path
+          description: id del pedido que va a cerrar
+          required: true
+          schema:
+            type: string 
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string     
+      responses:
+        200:
+          description: Orden Confirmada
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El usuario no existe 
+  /orders/status/{orderId}:
+    put:
+      tags:
+        - Orders
+      summary: cambiar estado del pedido
+      description: solo el admin puede modificarlo, los status aceptados son 3, 4 y 5 
+      parameters:
+        - name: orderId
+          in: path
+          description: id del pedido que va a modificar el estado
+          required: true
+          schema:
+            type: string 
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string     
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: 
+                    type: number
+                    enum: [3,4,5]
+                    example: 5
+      responses:
+        200:
+          description: Estado modificado
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El usuario no existe
+  /orders/history:
+    get:
+      tags:
+        - Orders
+      summary: mostrar historial de pedidos
+      description: muestra el historial del usuario loggeado 
+      parameters:
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Acceso permitido
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El usuario no existe
+  /orders/editOrder/{orderId}:
+    put:
+      tags:
+      - Orders
+      summary: Edita un pedido
+      description: se puede modificar el metodo de pago y el array productos
+      parameters:
+        - name: orderId
+          in: path
+          description: id del pedido que va a modificar
+          required: true
+          schema:
+            type: string 
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  idPayMet: 
+                    type: number
+                    enum: [1,2,3,4,5]
+                    example: 2
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        idProd: 
+                          type: number
+                          example: 2
+                        name:
+                          type: string
+                          example: "Hambuerguesa clasica"
+                        price:
+                          type: number
+                          example: 425
+                        amount:
+                          type: number
+                          example: 5
+      responses:
+        200:
+          description: Pedido modificado exitosamente
+        400:
+          description: los datos ingresados son incorrectos
+        401:
+          description: No esta loggeado.
+        404:
+          description: El usuario o el pedido no existe 
+        406: 
+          description: No se puede realizar la modificacion
+  /products:
+    get:
+      tags:
+        - Products
+      summary: Muestra la lista de productos disponibles
+      description: No hace falta estar loggeado 
+      responses:
+        200:
+          description: Acceso permitido
+    post:
+      tags:
+        - Products
+      summary: Cargar un nuevo producto
+      description: solo el admin puede realizar esta accion (debe estar loggeado)
+      parameters:
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+             schema:
+               type: object
+               properties:
+                 name: 
+                   type: string
+                   example: "Pizza de muzarella"
+                 price:
+                   type: number
+                   example: 400
+      responses:
+        200:
+          description: Nuevo producto cargado exitosamente
+        400:
+          description: Faltan datos
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El usuario no existe
+  /products/{idProd}:
+    delete:
+      tags:
+        - Products
+      summary: Eliminar productos de la lista
+      description: Solo admin loggeado puede realizar la accion
+      parameters:
+        - name: userid
+          in: header
+          description: Id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+        - name: idProd
+          in: path
+          description: id del producto que quiere eliminar
+          required: true
+          schema: 
+            type: string
+      responses:
+        200:
+          description: Producto eliminado exitosamente
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El producto no existe
+    put:
+      tags:
+        - Products
+      summary: Editar productos
+      description:  Permite editar nombre y precio de un producto (solo al admin si esta loggeado)
+      parameters:
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+        - name: idProd
+          in: path
+          description: id del producto que quiere modificar
+          required: true
+          schema: 
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+             schema:
+               type: object
+               properties:
+                 name: 
+                   type: string
+                   example: "Hambuerguesa doble con cheddar"
+                 price:
+                   type: number
+                   example: 500
+      responses:
+        200:
+          description: Producto modificado exitosamente
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El producto no existe
+
+          
+  /paymentMethods:
+    get:
+      tags:
+        - Payment Methods
+      summary: Muestra la lista de metodos de pago 
+      description: El usuario debe estar loggeado
+      responses:
+        200:
+          description: Acceso permitido
+    post:
+      tags:
+        - Payment Methods
+      summary: Cargar un nuevo metodo de pago
+      description: solo el admin puede realizar esta accion (debe estar loggeado)
+      parameters:
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+             schema:
+               type: object
+               properties:
+                 type: 
+                  description: tipo de metodo de pago 
+                  type: string
+                  example: "MasterCard Debito"
+                 working:
+                  description: si esta funcionando o no
+                  type: boolean
+                  example: true
+      responses:
+        200:
+          description: Metodo de pago agreagado exitosamente
+        400:
+          description: Faltan datos
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El usuario no existe
+  /paymentMethods/{idPayMet}:
+    delete:
+      tags:
+        - Payment Methods
+      summary: Eliminar metodo de pago de la lista
+      description: Solo admin loggeado puede realizar la accion
+      parameters:
+        - name: userid
+          in: header
+          description: Id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+        - name: idPayMet
+          in: path
+          description: id del metodo de pago que quiere eliminar
+          required: true
+          schema: 
+            type: string
+      responses:
+        200:
+          description: Metodo de pago eliminado exitosamente
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El metodo de pago no existe
+    put:
+      tags:
+        - Payment Methods
+      summary: Editar metodo de pago
+      description:  Permite editar si el metodo esta disponible o no (solo al admin si esta loggeado)
+      parameters:
+        - name: userid
+          in: header
+          description: id del usuario que esta loggeado
+          required: true
+          schema:
+            type: string
+        - name: idPayMet
+          in: path
+          description: id del metodo de pago que quiere modificar
+          required: true
+          schema: 
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+             schema:
+               type: object
+               properties:
+                 working: 
+                   type: boolean
+                   example: false
+      responses:
+        200:
+          description: Metodo de pago modificado exitosamente
+        401:
+          description: No esta loggeado.
+        403:
+          description: Acceso denegado.
+        404:
+          description: El metodo de pago no existe
+  
+
